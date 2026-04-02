@@ -501,19 +501,56 @@ export default function App() {
               {bottomTab === 'GALLERY' && (
                 <div className="h-full flex flex-col">
                   <div className="px-4 py-2 border-b border-slate-800/50 flex flex-col sm:flex-row items-center justify-between bg-slate-900/20 gap-3 shrink-0">
-                    <div className="flex items-center bg-slate-900/50 rounded-lg p-0.5 w-full sm:w-auto border border-slate-800/50">
-                      <button 
-                        onClick={() => setGalleryMode('COMPONENTS')}
-                        className={`flex-1 sm:flex-none px-3 py-1 rounded text-[9px] font-bold transition-all ${galleryMode === 'COMPONENTS' ? 'bg-indigo-600/80 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                      >
-                        BLOCOS
-                      </button>
-                      <button 
-                        onClick={() => setGalleryMode('LAYOUTS')}
-                        className={`flex-1 sm:flex-none px-3 py-1 rounded text-[9px] font-bold transition-all ${galleryMode === 'LAYOUTS' ? 'bg-indigo-600/80 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                      >
-                        TEMPLATES COMPLETOS
-                      </button>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="flex items-center bg-slate-900/50 rounded-lg p-0.5 border border-slate-800/50">
+                        <button 
+                          onClick={() => setGalleryMode('COMPONENTS')}
+                          className={`px-3 py-1 rounded text-[9px] font-bold transition-all ${galleryMode === 'COMPONENTS' ? 'bg-indigo-600/80 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                          BLOCOS
+                        </button>
+                        <button 
+                          onClick={() => setGalleryMode('LAYOUTS')}
+                          className={`px-3 py-1 rounded text-[9px] font-bold transition-all ${galleryMode === 'LAYOUTS' ? 'bg-indigo-600/80 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                          TEMPLATES COMPLETOS
+                        </button>
+                      </div>
+
+                      <AnimatePresence>
+                        {(gallerySelected || layoutSelected) && (
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            onClick={() => {
+                              if (gallerySelected) {
+                                addComponent(gallerySelected.type, gallerySelected.template);
+                                setGallerySelected(null);
+                              } else if (layoutSelected) {
+                                const groupId = `group_${Math.random().toString(36).substr(2, 9)}`;
+                                setLayout(prev => ({
+                                  ...prev,
+                                  components: [
+                                    ...prev.components,
+                                    ...layoutSelected.components.map(c => ({
+                                      ...c,
+                                      id: Math.random().toString(36).substr(2, 9),
+                                      groupId
+                                    }))
+                                  ]
+                                }));
+                                setLayoutSelected(null);
+                                setBottomTab('PROPS');
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-lg text-[10px] font-bold transition-all shadow-lg shadow-green-900/20"
+                          >
+                            <Plus className="w-3 h-3" />
+                            FIXAR NO TERMINAL
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
                     </div>
                     <div className="relative w-full sm:w-auto">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500" />
@@ -539,10 +576,7 @@ export default function App() {
                                 key={`${type}-${i}`}
                                 onClick={() => {
                                   setGallerySelected({ type: type as ComponentType, template: t });
-                                }}
-                                onDoubleClick={() => {
-                                  addComponent(type as ComponentType, t);
-                                  setGallerySelected(null);
+                                  setLayoutSelected(null); // Clear layout selection if component is selected
                                 }}
                                 className={`shrink-0 w-36 snap-start group bg-[#15181e] border rounded-md px-3 py-2 text-left transition-all flex items-center justify-between ${isSelected ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800/50 hover:border-slate-700 hover:bg-slate-800/50'}`}
                               >
@@ -562,22 +596,7 @@ export default function App() {
                               key={i}
                               onClick={() => {
                                 setLayoutSelected(l);
-                              }}
-                              onDoubleClick={() => {
-                                const groupId = `group_${Math.random().toString(36).substr(2, 9)}`;
-                                setLayout(prev => ({
-                                  ...prev,
-                                  components: [
-                                    ...prev.components,
-                                    ...l.components.map(c => ({
-                                      ...c,
-                                      id: Math.random().toString(36).substr(2, 9),
-                                      groupId
-                                    }))
-                                  ]
-                                }));
-                                setLayoutSelected(null);
-                                setBottomTab('PROPS');
+                                setGallerySelected(null); // Clear component selection if layout is selected
                               }}
                               className={`shrink-0 w-44 snap-start group bg-[#15181e] border rounded-md px-3 py-2 text-left transition-all flex items-center justify-between ${isSelected ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800/50 hover:border-slate-700 hover:bg-slate-800/50'}`}
                             >
